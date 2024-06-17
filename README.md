@@ -1,6 +1,10 @@
 # Meteor Mapper
 
-Meteor Mapper is an online data visualization tool built in React, utilizing NASA's API to showcase recorded meteorite landings worldwide.
+Meteor Mapper is an online data visualization tool built in React, utilizing NASA's API to showcase recorded meteorite landings worldwide. It was developed as a mini-app during the front-end section of my Northcoders Software Engineering Bootcamp to help with learning React, third party library access and APIs.
+
+ View a live demo here: [https://meteormapper.netlify.app/](https://meteormapper.netlify.app/)
+ 
+  [![Netlify Status](https://api.netlify.com/api/v1/badges/44af2a93-d28e-4cfe-8fd7-bbf422121770/deploy-status)](https://app.netlify.com/sites/meteormapper/deploys)
 
 ![Meteor Mapper Logo](./src/assets/meteor-mapper-preview.png)
 
@@ -11,7 +15,6 @@ Meteor Mapper is an online data visualization tool built in React, utilizing NAS
 - **Sorting**: Provides options to sort meteorites by name, year, class, and mass.
 - **Reset**: Allows resetting filters and sorting options to default.
 - **Loading Indicator**: Displays a spinner during data loading.
-- **Error Handling**: Logs errors if data retrieval fails.
 
 ## Technologies Used
 
@@ -51,7 +54,7 @@ The `Map` component displays meteorite landings on an interactive map using Reac
 
 ## Development Notes
 
-Meteor Mapper was developed collaboratively during a software development bootcamp using pair programming techniques. It integrates multiple React components to achieve seamless data visualization and interaction.
+Meteor Mapper was developed collaboratively with during a software development bootcamp using pair programming techniques. It integrates multiple React components to achieve seamless data visualization and interaction.
 
 ---
 
