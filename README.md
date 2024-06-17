@@ -2,6 +2,8 @@
 
 Meteor Mapper is an online data visualization tool built in React, utilizing NASA's API to showcase recorded meteorite landings worldwide.
 
+![Meteor Mapper Logo](./src/assets/meteor-mapper-preview.png)
+
 ## Features
 
 - **Mapping**: Utilizes React Leaflet for interactive mapping.
