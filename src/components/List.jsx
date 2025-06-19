@@ -9,7 +9,7 @@ function List({ results, setResults, setPosition, setSelectedMeteorId }) {
   const [selectedYear, setSelectedYear] = useState("");
   const [selectedClass, setSelectedClass] = useState("");
   const [toggled, setToggled] = useState(false);
-  const [query, setQuery] = useState("https://data.nasa.gov/resource/gh4g-9sfh.json");
+  const [query, setQuery] = useState("https://data.nasa.gov/docs/legacy/meteorite_landings/Meteorite_Landings.json");
   const [isError, setIsError] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [classList, setClassList] = useState([]);
@@ -41,7 +41,7 @@ function List({ results, setResults, setPosition, setSelectedMeteorId }) {
   };
 
   function handleFilter() {
-    let searchString = "https://data.nasa.gov/resource/gh4g-9sfh.json";
+    let searchString = "https://data.nasa.gov/docs/legacy/meteorite_landings/Meteorite_Landings.json";
     const params = [];
     if (selectedClass) {
       params.push(`recclass=${selectedClass}`);
@@ -64,7 +64,7 @@ function List({ results, setResults, setPosition, setSelectedMeteorId }) {
     setSelectedClass("");
     setSelectedYear("");
     setToggled(false);
-    setQuery("https://data.nasa.gov/resource/gh4g-9sfh.json");
+    setQuery("https://data.nasa.gov/docs/legacy/meteorite_landings/Meteorite_Landings.json");
     setIsLoading(true);
     setSortBy("name");
     setSortOrder("desc"); 
