@@ -9,7 +9,7 @@ function FilterClass({selectedClass, setSelectedClass, classList, setClassList})
 
 
   useEffect(()=>{
-    axios.get(`hhttps://data.nasa.gov/docs/legacy/meteorite_landings/Meteorite_Landings.json`)
+    axios.get(`https://data.nasa.gov/docs/legacy/meteorite_landings/gh4g-9sfh.json`)
     .then((response)=>{
       const arr = []
       response.data.forEach((meteor) => {
