@@ -62,6 +62,7 @@ function List({ results, setResults, setPosition, setSelectedMeteorId }) {
     let filteredResults = [...rawData];
 
     // Filter by class
+
     if (selectedClass) {
       filteredResults = filteredResults.filter(
         (meteor) => meteor.recclass === selectedClass
