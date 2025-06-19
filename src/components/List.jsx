@@ -2,82 +2,135 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import MeteorCard from "./MeteorCard";
 import FilterClass from "./FilterClass";
+import FilterSize from "./FilterSize";
 import FilterYear from "./FilterYear";
 import ToggleBtn from "./ToggleBtn";
 
 function List({ results, setResults, setPosition, setSelectedMeteorId }) {
   const [selectedYear, setSelectedYear] = useState("");
   const [selectedClass, setSelectedClass] = useState("");
+  const [selectedSize, setSelectedSize] = useState("");
   const [toggled, setToggled] = useState(false);
-  const [query, setQuery] = useState("https://data.nasa.gov/docs/legacy/meteorite_landings/Meteorite_Landings.json");
+  const [query, setQuery] = useState("/.netlify/functions/fetch-meteorites");
   const [isError, setIsError] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [classList, setClassList] = useState([]);
   const [sortBy, setSortBy] = useState("name");
-  const [sortOrder, setSortOrder] = useState("desc"); 
+  const [sortOrder, setSortOrder] = useState("desc");
+  const [rawData, setRawData] = useState([]);
 
-  const sortResults = (key) => {
-    const sortedResults = [...results];
+  const sortResults = (data, key, order) => {
+    const sortedResults = [...data];
     sortedResults.sort((a, b) => {
-      if (sortOrder === "asc") {
-        return a[key] < b[key] ? -1 : a[key] > b[key] ? 1 : 0;
-      } else {
-        return b[key] < a[key] ? -1 : b[key] > a[key] ? 1 : 0;
+      const aValue = a[key] || "";
+      const bValue = b[key] || "";
+      if (key === "mass") {
+        return order === "asc"
+          ? Number(aValue) - Number(bValue)
+          : Number(bValue) - Number(aValue);
       }
+      return order === "asc"
+        ? aValue < bValue
+          ? -1
+          : aValue > bValue
+          ? 1
+          : 0
+        : bValue < aValue
+        ? -1
+        : bValue > aValue
+        ? 1
+        : 0;
     });
-    setResults(sortedResults);
+    return sortedResults;
   };
 
   const handleSortChange = (e) => {
     const selectedSort = e.target.value;
     setSortBy(selectedSort);
-    sortResults(selectedSort);
+    const sorted = sortResults(results, selectedSort, sortOrder);
+    setResults(sorted);
   };
 
   const toggleSortOrder = () => {
     const newSortOrder = sortOrder === "asc" ? "desc" : "asc";
     setSortOrder(newSortOrder);
-    sortResults(sortBy);
+    const sorted = sortResults(results, sortBy, newSortOrder);
+    setResults(sorted);
   };
 
-  function handleFilter() {
-    let searchString = "https://data.nasa.gov/docs/legacy/meteorite_landings/gh4g-9sfh.json";
-    const params = [];
-    if (selectedClass) {
-      params.push(`recclass=${selectedClass}`);
-    }
-    if (selectedYear) {
-      params.push(`year=${selectedYear}-01-01T00:00:00.000`);
-    }
-    if (toggled) {
-      params.push(`fall=Fell`);
-    }
-    params.push(`$where=reclat IS NOT NULL AND reclong IS NOT NULL`);
-    if (params.length > 0) {
-      searchString += `?${params.join("&")}`;
-    }
-    setQuery(searchString);
-    setIsLoading(true);
-  }
+  const handleFilter = () => {
+    let filteredResults = [...rawData];
 
-  function handleReset() {
+    if (selectedClass) {
+      filteredResults = filteredResults.filter(
+        (meteor) => meteor.recclass === selectedClass
+      );
+    }
+
+    if (selectedYear) {
+      filteredResults = filteredResults.filter(
+        (meteor) => meteor.year && meteor.year.startsWith(selectedYear)
+      );
+    }
+
+    if (toggled) {
+      filteredResults = filteredResults.filter(
+        (meteor) => meteor.fall === "Fell"
+      );
+    }
+
+    if (selectedSize) {
+      const [min, max] = selectedSize.split("-").map(Number);
+      filteredResults = filteredResults.filter((meteor) => {
+        const mass = Number(meteor.mass);
+        if (selectedSize === "10000+") {
+          return mass >= 10000;
+        }
+        return mass >= min && (max ? mass <= max : true);
+      });
+    }
+
+    filteredResults = filteredResults.filter(
+      (meteor) => meteor.reclat && meteor.reclong
+    );
+
+    const sortedResults = sortResults(filteredResults, sortBy, sortOrder);
+    setResults(sortedResults);
+  };
+
+  const handleReset = () => {
     setSelectedClass("");
     setSelectedYear("");
+    setSelectedSize("");
     setToggled(false);
-    setQuery("https://data.nasa.gov/docs/legacy/meteorite_landings/gh4g-9sfh.json");
-    setIsLoading(true);
     setSortBy("name");
-    setSortOrder("desc"); 
-  }
+    setSortOrder("desc");
+    const sortedResults = sortResults(
+      rawData.filter((meteor) => meteor.reclat && meteor.reclong),
+      "name",
+      "desc"
+    );
+    setResults(sortedResults);
+  };
 
   useEffect(() => {
+    setIsLoading(true);
     axios
       .get(query)
       .then((response) => {
-        setResults(response.data);
+        const data = response.data;
+        setRawData(data);
+        setClassList([...new Set(data.map((meteor) => meteor.recclass)).sort()]);
+        const sortedResults = sortResults(
+          data.filter((meteor) => meteor.reclat && meteor.reclong),
+          "name",
+          "desc"
+        );
+        setResults(sortedResults);
         setIsLoading(false);
       })
       .catch((err) => {
+        console.error("Error fetching data:", err);
         setIsError(true);
         setIsLoading(false);
       });
@@ -85,22 +138,33 @@ function List({ results, setResults, setPosition, setSelectedMeteorId }) {
 
   useEffect(() => {
     handleFilter();
-  }, [selectedClass, selectedYear, toggled]);
-
-  useEffect(() => {
-    sortResults(sortBy);
-  }, [sortBy, sortOrder]);
+  }, [selectedClass, selectedYear, selectedSize, toggled]);
 
   if (isError) {
-    console.log("Error");
+    return (
+      <div className="error-message">
+        Failed to load meteorite data. Please try again later.
+      </div>
+    );
   }
 
   return (
     <div className="list-area">
       <div className="filters">
         Toggle Observed <ToggleBtn toggled={toggled} setToggled={setToggled} />
-        <FilterClass selectedClass={selectedClass} setSelectedClass={setSelectedClass} classList={classList} setClassList={setClassList} />
-        <FilterYear selectedYear={selectedYear} setSelectedYear={setSelectedYear} />
+        <FilterClass
+          selectedClass={selectedClass}
+          setSelectedClass={setSelectedClass}
+          classList={classList}
+        />
+        <FilterSize
+          selectedSize={selectedSize}
+          setSelectedSize={setSelectedSize}
+        />
+        <FilterYear
+          selectedYear={selectedYear}
+          setSelectedYear={setSelectedYear}
+        />
         <select id="sortby" value={sortBy} onChange={handleSortChange}>
           <option value="name">Sort by Name</option>
           <option value="year">Sort by Year</option>
@@ -110,7 +174,9 @@ function List({ results, setResults, setPosition, setSelectedMeteorId }) {
         <button className="sort-order-btn" onClick={toggleSortOrder}>
           {sortOrder === "asc" ? "ASC" : "DESC"}
         </button>
-        <button className="reset-btn" onClick={handleReset}>Reset <i className="fa-solid fa-rotate-left"></i></button>
+        <button className="reset-btn" onClick={handleReset}>
+          Reset <i className="fa-solid fa-rotate-left"></i>
+        </button>
       </div>
       <div className="list-items">
         {isLoading ? (

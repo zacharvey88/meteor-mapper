@@ -1,26 +1,8 @@
-import { useEffect } from "react";
-import axios from "axios"
-
-function FilterClass({selectedClass, setSelectedClass, classList, setClassList}) {
-
+function FilterClass({ selectedClass, setSelectedClass, classList }) {
   function handleClass(e) {
-    setSelectedClass(e.target.value)
+    setSelectedClass(e.target.value);
   }
-
-
-  useEffect(()=>{
-    axios.get(`https://data.nasa.gov/docs/legacy/meteorite_landings/gh4g-9sfh.json`)
-    .then((response)=>{
-      const arr = []
-      response.data.forEach((meteor) => {
-        if(!arr.includes(meteor.recclass)) {
-          arr.push(meteor.recclass)
-        }
-      })
-      setClassList(arr.filter((mclass) => mclass.length > 6).sort())
-    })
-  }, [])
-
+  
   return (
     <div className="filter">
       <select id="filter-class" value={selectedClass} onChange={handleClass}>
@@ -35,4 +17,4 @@ function FilterClass({selectedClass, setSelectedClass, classList, setClassList})
   );
 }
 
-export default FilterClass
+export default FilterClass;
